@@ -945,6 +945,103 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
 </IfModule>`;
 
     // ========================================================================
+    // Google Trends 風格：台灣金融關鍵字即時搜尋趨勢資料
+    // ========================================================================
+    const GOOGLE_TRENDS_FINANCE_QUERIES = [
+      {
+        id: 'gt-1',
+        query: '微台指期貨保證金',
+        subLabel: '台灣期交所 · 小資進場門檻熱搜',
+        volumeLabel: '1.48萬+',
+        growthPct: '+680%',
+        startedAgo: '2 小時前',
+        status: '↗ 活躍',
+        relatedTags: ['微台指一點多少', '微型台指期貨', '小台指保證金'],
+        moreCount: 12,
+        sparkline: '0,22 12,21 24,23 36,18 48,20 60,8 72,15 84,12 96,4 110,2',
+        googleTrendsUrl: 'https://trends.google.com.tw/trends/explore?geo=TW&q=%E5%BE%AE%E5%8F%B0%E6%8C%87%E6%9C%9F%E8%B2%A8%E4%BF%9D%E8%AD%89%E9%87%91',
+      },
+      {
+        id: 'gt-2',
+        query: '黃金期貨保證金',
+        subLabel: '國際金價波動 · 避險商品急升',
+        volumeLabel: '9,600+',
+        growthPct: '+540%',
+        startedAgo: '4 小時前',
+        status: '↗ 活躍',
+        relatedTags: ['微型黃金期貨', '黃金一點多少美金', '黃金CFD'],
+        moreCount: 9,
+        sparkline: '0,24 14,22 28,20 42,19 56,11 70,14 84,9 98,6 110,3',
+        googleTrendsUrl: 'https://trends.google.com.tw/trends/explore?geo=TW&q=%E9%BB%83%E9%87%91%E6%9C%9F%E8%B2%A8%E4%BF%9D%E8%AD%89%E9%87%91',
+      },
+      {
+        id: 'gt-3',
+        query: '股票期貨槓桿倍數',
+        subLabel: '台股現股族轉戰期貨節稅熱詞',
+        volumeLabel: '1.14萬+',
+        growthPct: '+340%',
+        startedAgo: '5 小時前',
+        status: '↗ 活躍',
+        relatedTags: ['股票期貨一口幾張', '個股期貨交易稅', '除權息'],
+        moreCount: 15,
+        sparkline: '0,23 15,23 30,21 45,14 60,16 75,11 90,8 105,5 110,4',
+        googleTrendsUrl: 'https://trends.google.com.tw/trends/explore?geo=TW&q=%E8%82%A1%E7%A5%A8%E6%9C%9F%E8%B2%A8%E6%A7%93%E6%A1%BF',
+      },
+      {
+        id: 'gt-4',
+        query: '小那斯達克夜盤時間',
+        subLabel: '美股財報季與科技股夜盤波動',
+        volumeLabel: '8,100+',
+        growthPct: '+270%',
+        startedAgo: '7 小時前',
+        status: '↗ 活躍',
+        relatedTags: ['微型那斯達克', '美股冬令時間', '海期手續費'],
+        moreCount: 8,
+        sparkline: '0,22 14,20 28,22 42,17 56,12 70,15 84,10 98,7 110,5',
+        googleTrendsUrl: 'https://trends.google.com.tw/trends/explore?geo=TW&q=%E5%B0%8F%E9%82%A3%E6%96%AF%E9%81%94%E5%85%8B%E5%A4%9C%E7%9B%A4',
+      },
+      {
+        id: 'gt-5',
+        query: '選擇權賣方保證金',
+        subLabel: '週三週選結算與價差單策略',
+        volumeLabel: '6,200+',
+        growthPct: '+310%',
+        startedAgo: '9 小時前',
+        status: '↗ 活躍',
+        relatedTags: ['台指選擇權入門', '週選結算時間', 'A值B值'],
+        moreCount: 11,
+        sparkline: '0,24 16,22 32,19 48,18 64,10 80,13 96,7 110,4',
+        googleTrendsUrl: 'https://trends.google.com.tw/trends/explore?geo=TW&q=%E9%81%B8%E6%93%87%E6%AC%8A%E8%B3%A3%E6%96%B9%E4%BF%9D%E8%AD%89%E9%87%91',
+      },
+      {
+        id: 'gt-6',
+        query: '群益 MT5 指標安裝教學',
+        subLabel: '台灣合法外匯保證金與 CFD 藍海詞',
+        volumeLabel: '5,400+',
+        growthPct: '+490%',
+        startedAgo: '11 小時前',
+        status: '↗ 活躍',
+        relatedTags: ['群益槓桿交易商', '外匯保證金開戶', 'MT5下載'],
+        moreCount: 7,
+        sparkline: '0,24 14,23 28,21 42,16 56,14 70,9 84,8 98,4 110,2',
+        googleTrendsUrl: 'https://trends.google.com.tw/trends/explore?geo=TW&q=%E7%BE%A4%E7%9B%8A+MT5',
+      },
+      {
+        id: 'gt-7',
+        query: '美債殖利率與降息預測',
+        subLabel: '總經利率決策帶動債券期貨關注',
+        volumeLabel: '2萬+',
+        growthPct: '+450%',
+        startedAgo: '14 小時前',
+        status: '↗ 活躍',
+        relatedTags: ['美國十年期公債', '微型美債期貨', '聯準會降息'],
+        moreCount: 18,
+        sparkline: '0,21 15,19 30,15 45,17 60,9 75,11 90,6 105,5 110,3',
+        googleTrendsUrl: 'https://trends.google.com.tw/trends/explore?geo=TW&q=%E7%BE%8E%E5%82%B5%E6%AE%96%E5%88%A9%E7%8E%87',
+      },
+    ];
+
+    // ========================================================================
     // 大型戰情資料庫：本月金融市場搶佔關鍵字深度解析
     // ========================================================================
     const MARKET_SEO_BATTLE_CARDS = [
@@ -1089,7 +1186,7 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
     ];
 
     // ========================================================================
-    // 脆 (Threads) 期貨 / CFD / 槓桿 5 大高流量主題拆解（明確區分：曝光次數 / 轉分享次數 / 留言次數 + 可直接進入查看該篇脆文的網址）
+    // 脆 (Threads) 期貨 / CFD / 槓桿 5 大高流量主題拆解
     // ========================================================================
     const THREADS_VIRAL_INSIGHTS = {
       algorithmInsight: {
@@ -1202,7 +1299,7 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
       wpLatest: '7.1.5',
       phpLatest: '8.3.37 / 8.4.28',
       astraLatest: '4.14.3',
-      lastScanTime: '2026-11-26 15:50',
+      lastScanTime: '2026-11-26 16:33',
     };
 
     const SECTOR_HOT_KEYWORDS = {
@@ -1280,7 +1377,7 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
     ];
 
     // ========================================================================
-    // 36 站業務網站資料庫（已將「娜娜財神」與「陳奕揚」調整至「停用/過期」）
+    // 36 站業務網站資料庫（陳奕揚、娜娜財神 已放在停用/過期）
     // ========================================================================
     const INITIAL_SITES = [
       { id: 'site-01', team: '槓桿', opsStatus: '正常', buildStage: '已上線', name: '謝琮凱', note: 'Jungle · 槓桿交易主力站', url: 'https://cfd-jungle.com/', domain: 'cfd-jungle.com', email: 'a99649@futures.capital.com.tw', astraVer: '4.13.9', wpVer: '7.1.4', outdatedPlugins: 1, daysSincePost: 6, themeColor: 'from-sky-900 via-blue-800 to-slate-900', seo: { healthScore: 91, dr: 29, organicTraffic: 3420, growthPct: 48.5, aiCitations: { aiOverview: 29, chatgpt: 15, perplexity: 14, gemini: 9 }, keywords: { top3: 19, top10: 41 }, topKeywords: [{ kw: '謝琮凱 期貨', pos: 1, vol: 980 }, { kw: '群益 MT5 指標安裝教學', pos: 1, vol: 5400 }] } },
@@ -1392,22 +1489,28 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
 
     function App() {
       const [sites, setSites] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('csc_sites_full_v4')) || INITIAL_SITES; } catch { return INITIAL_SITES; }
+        try { return JSON.parse(localStorage.getItem('csc_sites_full_v5')) || INITIAL_SITES; } catch { return INITIAL_SITES; }
       });
       const [logs, setLogs] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('csc_logs_full_v4')) || INITIAL_LOGS; } catch { return INITIAL_LOGS; }
+        try { return JSON.parse(localStorage.getItem('csc_logs_full_v5')) || INITIAL_LOGS; } catch { return INITIAL_LOGS; }
       });
       const [siteHistories, setSiteHistories] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('csc_hist_full_v4')) || DEFAULT_HISTORIES; } catch { return DEFAULT_HISTORIES; }
+        try { return JSON.parse(localStorage.getItem('csc_hist_full_v5')) || DEFAULT_HISTORIES; } catch { return DEFAULT_HISTORIES; }
       });
 
       useEffect(() => {
         try {
-          localStorage.setItem('csc_sites_full_v4', JSON.stringify(sites));
-          localStorage.setItem('csc_logs_full_v4', JSON.stringify(logs));
-          localStorage.setItem('csc_hist_full_v4', JSON.stringify(siteHistories));
+          localStorage.setItem('csc_sites_full_v5', JSON.stringify(sites));
+          localStorage.setItem('csc_logs_full_v5', JSON.stringify(logs));
+          localStorage.setItem('csc_hist_full_v5', JSON.stringify(siteHistories));
         } catch (e) {}
       }, [sites, logs, siteHistories]);
+
+      // Google Trends 風格：業務網站排名列表 & 金融關鍵字查詢狀態
+      const [rankSortBy, setRankSortBy] = useState('traffic'); // 'traffic' | 'growth' | 'ai' | 'health'
+      const [rankPage, setRankPage] = useState(0); // 0: 1-10, 1: 11-20, 2: 21-30
+      const [trendsQuerySearch, setTrendsQuerySearch] = useState('');
+      const [trendsTimeRange, setTrendsTimeRange] = useState('過去 30 天');
 
       const [teamFilter, setTeamFilter] = useState('全部');
       const [statusFilter, setStatusFilter] = useState('全部');
@@ -1485,6 +1588,65 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
           .then(() => setCloudSyncStatus('synced'))
           .catch(() => setCloudSyncStatus('error'));
       };
+
+      // Google Trends 風格：全站上線中業務網站排名列表
+      const rankedActiveSites = useMemo(() => {
+        const active = sites.filter((s) => s.opsStatus !== '停用' && s.team !== '離職');
+        const sorted = [...active].sort((a, b) => {
+          if (rankSortBy === 'growth') return b.seo.growthPct - a.seo.growthPct;
+          if (rankSortBy === 'ai') {
+            const aiA = a.seo.aiCitations.aiOverview + a.seo.aiCitations.chatgpt + a.seo.aiCitations.perplexity + a.seo.aiCitations.gemini;
+            const aiB = b.seo.aiCitations.aiOverview + b.seo.aiCitations.chatgpt + b.seo.aiCitations.perplexity + b.seo.aiCitations.gemini;
+            return aiB - aiA;
+          }
+          if (rankSortBy === 'health') return b.seo.healthScore - a.seo.healthScore;
+          return b.seo.organicTraffic - a.seo.organicTraffic;
+        });
+        const maxVal = sorted[0]
+          ? rankSortBy === 'growth'
+            ? sorted[0].seo.growthPct
+            : rankSortBy === 'ai'
+            ? sorted[0].seo.aiCitations.aiOverview + sorted[0].seo.aiCitations.chatgpt + sorted[0].seo.aiCitations.perplexity + sorted[0].seo.aiCitations.gemini
+            : rankSortBy === 'health'
+            ? 100
+            : sorted[0].seo.organicTraffic
+          : 1;
+
+        return sorted.map((site, idx) => {
+          const aiSum = site.seo.aiCitations.aiOverview + site.seo.aiCitations.chatgpt + site.seo.aiCitations.perplexity + site.seo.aiCitations.gemini;
+          const curVal =
+            rankSortBy === 'growth'
+              ? site.seo.growthPct
+              : rankSortBy === 'ai'
+              ? aiSum
+              : rankSortBy === 'health'
+              ? site.seo.healthScore
+              : site.seo.organicTraffic;
+          const heatPct = Math.max(12, Math.min(100, Math.round((curVal / Math.max(maxVal, 1)) * 100)));
+          return {
+            ...site,
+            rankNum: idx + 1,
+            aiSum,
+            heatPct,
+          };
+        });
+      }, [sites, rankSortBy]);
+
+      const pagedRankedSites = useMemo(() => {
+        const start = rankPage * 10;
+        return rankedActiveSites.slice(start, start + 10);
+      }, [rankedActiveSites, rankPage]);
+
+      const filteredTrendsQueries = useMemo(() => {
+        const q = trendsQuerySearch.trim().toLowerCase();
+        if (!q) return GOOGLE_TRENDS_FINANCE_QUERIES;
+        return GOOGLE_TRENDS_FINANCE_QUERIES.filter(
+          (item) =>
+            item.query.toLowerCase().includes(q) ||
+            item.subLabel.toLowerCase().includes(q) ||
+            item.relatedTags.some((t) => t.toLowerCase().includes(q))
+        );
+      }, [trendsQuerySearch]);
 
       const recentWorkNews = useMemo(() => {
         const items = [];
@@ -1680,18 +1842,19 @@ WP工程師詩葶 敬上`);
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center font-mono font-black text-sm">WP</div>
               <div>
                 <h1 className="text-sm sm:text-base font-extrabold">群益業務 WP 網站 AIOps &amp; SEO 戰情中控台</h1>
-                <p className="text-xs text-slate-400">近期工作日誌 · 本月金融 SEO 搶字架構 · 脆爆文曝光與轉分享數據分析</p>
+                <p className="text-xs text-slate-400">業務網站排名列表 · 金融關鍵字搜尋趨勢 · 本月搶字架構 · 脆爆文數據</p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
               <a href="#sec-news" className="px-2.5 py-1.5 bg-slate-800 rounded hover:bg-slate-700">📰 工作日誌</a>
+              <a href="#sec-trends-rank" className="px-2.5 py-1.5 bg-blue-700 text-white rounded hover:bg-blue-600">📊 業務排名 &amp; 金融趨勢</a>
               <a href="#sec-seo-battle" className="px-2.5 py-1.5 bg-emerald-800 text-emerald-100 rounded hover:bg-emerald-700">🔥 本月金融搶字庫</a>
-              <a href="#sec-threads" className="px-2.5 py-1.5 bg-purple-900 text-purple-100 rounded hover:bg-purple-800">🧵 脆爆文數據 &amp; 廣告</a>
+              <a href="#sec-threads" className="px-2.5 py-1.5 bg-purple-900 text-purple-100 rounded hover:bg-purple-800">🧵 脆爆文數據</a>
               <a href="#sec-ops" className="px-2.5 py-1.5 bg-slate-800 rounded hover:bg-slate-700">01 業務網站牆</a>
-              <a href="#sec-seo" className="px-2.5 py-1.5 bg-sky-900 text-sky-100 rounded hover:bg-sky-800">02 SEO/AEO 戰情</a>
+              <a href="#sec-seo" className="px-2.5 py-1.5 bg-sky-900 text-sky-100 rounded hover:bg-sky-800">02 SEO/AEO</a>
               <a href="#sec-value" className="px-2.5 py-1.5 bg-amber-900 text-amber-100 rounded hover:bg-amber-800">03 技能進化</a>
-              <a href="#sec-ip" className="px-2.5 py-1.5 bg-rose-900 text-rose-100 rounded hover:bg-rose-800">05 新站惡意IP</a>
+              <a href="#sec-ip" className="px-2.5 py-1.5 bg-rose-900 text-rose-100 rounded hover:bg-rose-800">05 惡意IP</a>
               <button
                 onClick={() => {
                   setTempCloudUrl(cloudApiUrl);
@@ -1702,14 +1865,14 @@ WP工程師詩葶 敬上`);
                 }`}
               >
                 <span>☁️</span>
-                <span>{!cloudApiUrl ? '設定雲端即時同步' : cloudSyncStatus === 'syncing' ? '同步中...' : '雲端已連線'}</span>
+                <span>{!cloudApiUrl ? '設定雲端同步' : cloudSyncStatus === 'syncing' ? '同步中...' : '雲端已連線'}</span>
               </button>
             </div>
           </header>
 
           <main className="max-w-[1440px] mx-auto px-4 sm:px-6 pt-5 space-y-7">
             {/* ============================================================== */}
-            {/* 區塊 A：近期工作日誌快報 */}
+            {/* 區塊 A：近期工作日誌快報                                       */}
             {/* ============================================================== */}
             <section id="sec-news" className="bg-white border-2 border-blue-300 rounded shadow-xs overflow-hidden">
               <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
@@ -1754,6 +1917,247 @@ WP工程師詩葶 敬上`);
                     </div>
                   </div>
                 ))}
+              </div>
+            </section>
+
+            {/* ============================================================== */}
+            {/* 區塊 A-2（全新 Google Trends 風格）：業務網站排名列表 & 金融關鍵字查詢 */}
+            {/* ============================================================== */}
+            <section id="sec-trends-rank" className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              {/* 左半邊（5 欄）：Google Trends 排行榜樣式 — 業務網站流量與熱度排名列表 */}
+              <div className="lg:col-span-5 bg-white border border-slate-300 rounded-lg shadow-xs overflow-hidden flex flex-col justify-between">
+                <div>
+                  {/* 頂部篩選膠囊列（仿 Google Trends 介面） */}
+                  <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
+                      <span className="px-2.5 py-1 bg-white border border-slate-300 rounded-full text-slate-700">
+                        📍 Taiwan · 群益業務站
+                      </span>
+                      <select
+                        value={rankSortBy}
+                        onChange={(e) => { setRankSortBy(e.target.value); setRankPage(0); }}
+                        className="px-2.5 py-1 bg-white border border-slate-300 rounded-full text-blue-700 font-extrabold focus:outline-none cursor-pointer"
+                      >
+                        <option value="traffic">📊 依月自然流量排序</option>
+                        <option value="growth">🚀 依月成長變化排序</option>
+                        <option value="ai">🤖 依 AI 摘要引用排序</option>
+                        <option value="health">🛡️ 依 SEO 健康度排序</option>
+                      </select>
+                    </div>
+                    <span className="text-[11px] font-mono text-slate-500">共 {rankedActiveSites.length} 站上線中</span>
+                  </div>
+
+                  {/* 表頭：查詢 / 業務網站 | 搜尋熱度 | 變化 */}
+                  <div className="px-4 py-2.5 border-b border-slate-200 grid grid-cols-12 text-xs font-extrabold text-slate-500">
+                    <div className="col-span-6">查詢 · 業務網站排名</div>
+                    <div className="col-span-3 text-center">搜尋熱度</div>
+                    <div className="col-span-3 text-right">月變化</div>
+                  </div>
+
+                  {/* 列表主體（仿 Google Trends 1-10 列 + 藍色進度條 + 變化箭頭） */}
+                  <div className="divide-y divide-slate-100">
+                    {pagedRankedSites.map((site) => (
+                      <div
+                        key={site.id}
+                        onClick={() => {
+                          setSelectedSeoSiteId(site.id);
+                          setSwNavTab('analysis');
+                          document.getElementById('sec-seo')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="px-4 py-2.5 grid grid-cols-12 items-center hover:bg-blue-50/60 cursor-pointer transition-colors text-xs sm:text-sm"
+                      >
+                        <div className="col-span-6 flex items-center gap-2.5 min-w-0 pr-2">
+                          <span className={`w-5 text-right font-mono font-bold shrink-0 ${site.rankNum <= 3 ? 'text-blue-600 font-black' : 'text-slate-500'}`}>
+                            {site.rankNum}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="font-extrabold text-[#0F172A] truncate flex items-center gap-1.5">
+                              <span>{site.name}</span>
+                              <span className="text-[10px] font-normal text-slate-400">({site.team})</span>
+                            </div>
+                            <div className="text-[11px] font-mono text-slate-500 truncate">
+                              {site.domain} · {rankSortBy === 'ai' ? `AI 引用 ${site.aiSum} 次` : rankSortBy === 'health' ? `健康度 ${site.seo.healthScore} 分` : `${site.seo.organicTraffic.toLocaleString()} 次/月`}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Google Trends 經典藍色熱度條 */}
+                        <div className="col-span-3 flex items-center justify-center px-2">
+                          <div className="w-full h-2.5 bg-blue-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[#1A73E8] rounded-full transition-all duration-300"
+                              style={{ width: `${site.heatPct}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 成長變化百分比與快捷操作 */}
+                        <div className="col-span-3 flex items-center justify-end gap-1.5 font-mono text-xs font-extrabold">
+                          <span className={site.seo.growthPct >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                            {site.seo.growthPct >= 0 ? `↑ +${site.seo.growthPct}%` : `↓ ${site.seo.growthPct}%`}
+                          </span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setHistoryModalSiteId(site.id); }}
+                            title="查看業務需求歷程"
+                            className="p-1 text-slate-400 hover:text-blue-600 rounded"
+                          >
+                            ⋮
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 底部分頁列（仿 Google Trends 第 1–10 列，共 XX 列 < >） */}
+                <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-4 text-xs text-slate-600 font-medium">
+                  <span>
+                    第 {rankPage * 10 + 1}–{Math.min((rankPage + 1) * 10, rankedActiveSites.length)} 列，共 {rankedActiveSites.length} 列
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={rankPage === 0}
+                      onClick={() => setRankPage((p) => Math.max(0, p - 1))}
+                      className="px-2 py-1 rounded hover:bg-slate-200 disabled:opacity-30 font-bold"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      disabled={(rankPage + 1) * 10 >= rankedActiveSites.length}
+                      onClick={() => setRankPage((p) => p + 1)}
+                      className="px-2 py-1 rounded hover:bg-slate-200 disabled:opacity-30 font-bold"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 右半邊（7 欄）：Google 搜尋趨勢即時樣式 — 金融關鍵字查詢與走勢折線圖 */}
+              <div className="lg:col-span-7 bg-white border border-slate-300 rounded-lg shadow-xs overflow-hidden flex flex-col justify-between">
+                <div>
+                  {/* 頂部篩選膠囊與搜尋輸入列（仿第一張圖 Google 搜尋趨勢介面） */}
+                  <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
+                      <span className="px-2.5 py-1 bg-white border border-slate-300 rounded-full text-slate-700">
+                        📍 Taiwan
+                      </span>
+                      <select
+                        value={trendsTimeRange}
+                        onChange={(e) => setTrendsTimeRange(e.target.value)}
+                        className="px-2.5 py-1 bg-white border border-slate-300 rounded-full text-slate-700 focus:outline-none"
+                      >
+                        <option value="過去 24 小時">📅 過去 24 小時</option>
+                        <option value="過去 7 天">📅 過去 7 天</option>
+                        <option value="過去 30 天">📅 過去 30 天</option>
+                      </select>
+                      <span className="px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full text-blue-800">
+                        品 商業與金融 · 期貨/CFD
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={trendsQuerySearch}
+                        onChange={(e) => setTrendsQuerySearch(e.target.value)}
+                        placeholder="🔍 查詢金融關鍵字..."
+                        className="px-3 py-1 text-xs bg-white border border-slate-300 rounded-full w-44 focus:outline-none focus:border-blue-600"
+                      />
+                      <a
+                        href="https://trends.google.com.tw/trending?geo=TW&category=3"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2.5 py-1 text-xs font-bold bg-[#1A73E8] hover:bg-blue-700 text-white rounded-full shrink-0"
+                      >
+                        ↗ Google 趨勢
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* 表頭：Google 搜尋趨勢 | 搜尋量 | 已開始 | 趨勢詳細資料 | 走勢圖 */}
+                  <div className="px-4 py-2.5 border-b border-slate-200 grid grid-cols-12 text-xs font-extrabold text-slate-500">
+                    <div className="col-span-4">🔍 Google 搜尋趨勢 · 金融熱字</div>
+                    <div className="col-span-2">搜尋量</div>
+                    <div className="col-span-2">已開始</div>
+                    <div className="col-span-2 hidden sm:block">趨勢詳細資料</div>
+                    <div className="col-span-4 sm:col-span-2 text-right">{trendsTimeRange}</div>
+                  </div>
+
+                  {/* 趨勢列表主體（仿第一張圖：熱字 + 搜尋量 + 綠色活躍徽章 + 關聯標籤 + 綠色走勢折線） */}
+                  <div className="divide-y divide-slate-100">
+                    {filteredTrendsQueries.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => copyTextSafely(item.query, () => triggerToast(`已複製金融熱搜字：「${item.query}」`))}
+                        className="px-4 py-3 grid grid-cols-12 items-center hover:bg-slate-50 cursor-pointer transition-colors gap-1"
+                      >
+                        {/* 關鍵字名稱與副標 */}
+                        <div className="col-span-4 pr-2">
+                          <div className="text-xs sm:text-sm font-extrabold text-[#0F172A] hover:text-blue-700">
+                            {item.query}
+                          </div>
+                          <div className="text-[11px] text-slate-500 truncate mt-0.5">{item.subLabel}</div>
+                        </div>
+
+                        {/* 搜尋量與漲幅 */}
+                        <div className="col-span-2 font-mono">
+                          <div className="text-xs sm:text-sm font-extrabold text-[#0F172A]">{item.volumeLabel}</div>
+                          <div className="text-[11px] font-bold text-slate-500">↑ {item.growthPct}</div>
+                        </div>
+
+                        {/* 已開始 & 綠色活躍徽章 */}
+                        <div className="col-span-2">
+                          <div className="text-xs text-slate-700 font-medium">{item.startedAgo}</div>
+                          <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 rounded">
+                            {item.status}
+                          </span>
+                        </div>
+
+                        {/* 趨勢詳細資料（關聯長尾標籤） */}
+                        <div className="col-span-2 hidden sm:block pr-1">
+                          <div className="flex flex-wrap gap-1">
+                            {item.relatedTags.slice(0, 2).map((tag) => (
+                              <span key={tag} className="text-[11px] text-slate-600 underline decoration-slate-300">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">和另外 {item.moreCount} 個</div>
+                        </div>
+
+                        {/* 綠色走勢折線圖 SVG + 外部驗證連結 */}
+                        <div className="col-span-4 sm:col-span-2 flex items-center justify-end gap-2">
+                          <svg className="w-20 h-7 overflow-visible" viewBox="0 0 110 26">
+                            <polyline
+                              fill="none"
+                              stroke="#16A34A"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              points={item.sparkline}
+                            />
+                          </svg>
+                          <a
+                            href={item.googleTrendsUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            title="前往 Google Trends 檢視此關鍵字"
+                            className="text-xs text-blue-600 hover:underline font-bold shrink-0"
+                          >
+                            ↗
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                  <span>💡 點擊任一金融熱字可直接複製關鍵字；點擊右側 <strong>↗</strong> 可開啟 Google Trends 台灣即時趨勢圖表</span>
+                  <span className="font-mono">2026/11/26 下午 4:33 更新</span>
+                </div>
               </div>
             </section>
 
@@ -1991,7 +2395,6 @@ WP工程師詩葶 敬上`);
               </div>
 
               <div className="p-5 space-y-5">
-                {/* 演算法核心解答區：曝光次數 vs 轉分享次數 */}
                 <div className="p-4 bg-purple-950 text-white rounded-md border border-purple-700 space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-purple-800 pb-2.5">
                     <h3 className="text-sm sm:text-base font-extrabold text-amber-300">
@@ -2014,7 +2417,6 @@ WP工程師詩葶 敬上`);
                   </div>
                 </div>
 
-                {/* 5 大爆文數據卡片（清楚列出：曝光次數 / 轉分享次數 / 留言次數 + 兩組免登入直達連結） */}
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-sm sm:text-base font-extrabold text-[#0F172A]">
@@ -2049,7 +2451,6 @@ WP工程師詩葶 敬上`);
                             {post.topic}
                           </div>
 
-                          {/* 獨立三項數據指標卡：曝光次數 / 轉分享次數 / 留言次數 */}
                           <div className="p-2 bg-white border border-purple-300 rounded space-y-1 font-mono">
                             <div className="flex justify-between items-center text-[11px]">
                               <span className="text-slate-500 font-sans font-bold">👁️ 曝光次數：</span>
@@ -2102,7 +2503,6 @@ WP工程師詩葶 敬上`);
                   </div>
                 </div>
 
-                {/* 競品廣告分析 */}
                 <div className="pt-4 border-t border-slate-200 space-y-3">
                   <h3 className="text-sm sm:text-base font-extrabold text-[#0F172A]">
                     📢 市場上最常下廣告（Google Ads / Meta 廣告檔案庫）的競品網站 &amp; 業務突圍打法
