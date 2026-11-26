@@ -953,18 +953,6 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
   </RequireAll>
 </IfModule>`;
 
-    const SYSTEM_BENCHMARKS = {
-      wpLatest: '7.1.5',
-      phpLatest: '8.3.37 / 8.4.28',
-      astraLatest: '4.14.3',
-      lastScanTime: '2026-11-26 10:30',
-      securityBulletins: [
-        { id: 'WP-2026-1125', level: 'CRITICAL', title: 'WordPress 7.1.5 緊急資安維護版釋出（修補 REST API 權限繞過漏洞）', date: '今日發布', action: '建議全站 36 站於 48 小時內完成核心小版本升級' },
-        { id: 'PHP-2026-1122', level: 'WARN', title: 'PHP 8.3.37 / 8.4.28 安全更新（修補 OpenSSL 與 cURL 記憶體洩漏）', date: '3 天前', action: '已確認主機商環境排程本週四凌晨自動套用修補' },
-        { id: 'ASTRA-4.14.3', level: 'INFO', title: 'Astra 佈景主題官方最新穩定版 v4.14.3（優化行動端 LCP 載入速度）', date: '本週更新', action: '目前 7 個業務站點仍停留在 v4.13.x，可一鍵批次升級' },
-      ],
-    };
-
     const INITIAL_SITES = [
       { id: 'site-01', team: '槓桿', opsStatus: '正常', buildStage: '已上線', name: '謝琮凱', note: 'Jungle · 槓桿交易主力站', url: 'https://cfd-jungle.com/', domain: 'cfd-jungle.com', email: 'a99649@futures.capital.com.tw', astraVer: '4.13.9', wpVer: '7.1.4', outdatedPlugins: 1, daysSincePost: 6, themeColor: 'from-sky-900 via-blue-800 to-slate-900', seo: { healthScore: 91, dr: 29, organicTraffic: 3420, growthPct: 48.5, aiCitations: { aiOverview: 29, chatgpt: 15, perplexity: 14, gemini: 9 }, keywords: { top3: 19, top10: 41 } } },
       { id: 'site-02', team: '台中期貨', opsStatus: '正常', buildStage: '已上線', name: '廖梓棋', note: '台中期貨 · 槓桿交易神探', url: 'https://capfutures.com/', domain: 'capfutures.com', email: 'a97157@futures.capital.com.tw', astraVer: '4.14.3', wpVer: '7.1.5', outdatedPlugins: 0, daysSincePost: 9, themeColor: 'from-slate-800 via-blue-900 to-slate-950', seo: { healthScore: 93, dr: 27, organicTraffic: 2680, growthPct: 39.4, aiCitations: { aiOverview: 22, chatgpt: 11, perplexity: 9, gemini: 6 }, keywords: { top3: 15, top10: 34 } } },
@@ -1073,9 +1061,71 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
       const [ipSearchFilter, setIpSearchFilter] = useState('');
       const [toastMsg, setToastMsg] = useState('');
 
+      // Google 雲端資料庫即時同步狀態
+      const [cloudApiUrl, setCloudApiUrl] = useState(() => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const urlFromQuery = params.get('cloud');
+          if (urlFromQuery) {
+            localStorage.setItem('csc_cloud_api_url', urlFromQuery);
+            return urlFromQuery;
+          }
+          return localStorage.getItem('csc_cloud_api_url') || '';
+        } catch {
+          return '';
+        }
+      });
+      const [showCloudModal, setShowCloudModal] = useState(false);
+      const [tempCloudUrl, setTempCloudUrl] = useState(cloudApiUrl);
+      const [cloudSyncStatus, setCloudSyncStatus] = useState('idle');
+
       const triggerToast = (msg) => {
         setToastMsg(msg);
         setTimeout(() => setToastMsg(''), 3000);
+      };
+
+      // 啟動時若已設定 Google 雲端 API，自動拉取最新跨裝置進度
+      useEffect(() => {
+        if (!cloudApiUrl) return;
+        setCloudSyncStatus('syncing');
+        fetch(cloudApiUrl)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && (data.siteHistories || data.logs || data.sites)) {
+              if (data.siteHistories) setSiteHistories(data.siteHistories);
+              if (data.logs) setLogs(data.logs);
+              if (data.sites) setSites(data.sites);
+              setCloudSyncStatus('synced');
+            } else {
+              setCloudSyncStatus('synced');
+            }
+          })
+          .catch(() => {
+            setCloudSyncStatus('error');
+          });
+      }, [cloudApiUrl]);
+
+      // 將最新資料推播寫入 Google 雲端資料庫
+      const pushToGoogleSheetCloud = (nextSites, nextLogs, nextHistories, targetUrl = cloudApiUrl) => {
+        if (!targetUrl) return;
+        setCloudSyncStatus('syncing');
+        fetch(targetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            updatedAt: new Date().toISOString(),
+            sites: nextSites,
+            logs: nextLogs,
+            siteHistories: nextHistories,
+          }),
+        })
+          .then(() => {
+            setCloudSyncStatus('synced');
+          })
+          .catch(() => {
+            setCloudSyncStatus('error');
+          });
       };
 
       const filteredOpsSites = useMemo(() => {
@@ -1110,17 +1160,24 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
           actionText: newHistoryAction.trim() || 'WP工程師詩葶 已完成更新。',
           highlight: newHistoryCategory === 'AI 收錄里程碑',
         };
-        setSiteHistories((prev) => ({ ...prev, [historyModalSiteId]: [entry, ...(prev[historyModalSiteId] || [])] }));
-        setLogs((prev) => [{
+        const nextHistories = { ...siteHistories, [historyModalSiteId]: [entry, ...(siteHistories[historyModalSiteId] || [])] };
+        const nextLogs = [{
           id: `LOG-${Date.now()}`,
           time: `${entry.date} 10:00:00`,
           level: entry.highlight ? 'FIXED' : 'INFO',
           siteName: `${target.name} (${target.domain})`,
           message: `[${entry.category}] ${entry.requestText} → ${entry.actionText}`,
-        }, ...prev]);
+        }, ...logs];
+        setSiteHistories(nextHistories);
+        setLogs(nextLogs);
+        pushToGoogleSheetCloud(sites, nextLogs, nextHistories);
         setNewHistoryRequest('');
         setNewHistoryAction('');
-        triggerToast(`已儲存「${target.name}」的更新紀錄！`);
+        triggerToast(
+          cloudApiUrl
+            ? `已儲存「${target.name}」並即時推播同步至雲端！`
+            : `已儲存「${target.name}」的更新紀錄！`
+        );
       };
 
       return (
@@ -1140,15 +1197,35 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
                 <p className="text-xs text-slate-400">36 站業務官網監控 · 需求歷程檔案 · 新站資安黑名單懶人包</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs font-bold">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
               <a href="#sec-ops" className="px-2.5 py-1.5 bg-slate-800 rounded hover:bg-slate-700">01 業務網站牆</a>
               <a href="#sec-logs" className="px-2.5 py-1.5 bg-slate-800 rounded hover:bg-slate-700">02 資安問題日誌</a>
               <a href="#sec-ip" className="px-2.5 py-1.5 bg-rose-900 text-rose-100 border border-rose-700 rounded hover:bg-rose-800">03 新站惡意IP黑名單</a>
+              <button
+                onClick={() => {
+                  setTempCloudUrl(cloudApiUrl);
+                  setShowCloudModal(true);
+                }}
+                className={`px-3 py-1.5 rounded border flex items-center gap-1.5 ${
+                  cloudApiUrl
+                    ? 'bg-emerald-700 text-white border-emerald-500'
+                    : 'bg-blue-600 text-white border-blue-400 animate-pulse'
+                }`}
+              >
+                <span>☁️</span>
+                <span>
+                  {!cloudApiUrl
+                    ? '設定雲端即時同步'
+                    : cloudSyncStatus === 'syncing'
+                    ? '雲端同步中...'
+                    : '雲端資料庫已連線'}
+                </span>
+              </button>
             </div>
           </header>
 
           <main className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-6 space-y-8">
-            {/* 區塊 01：36 站業務官網縮圖牆（點擊任意一位業務即彈出獨立需求與更動歷程視窗） */}
+            {/* 區塊 01：36 站業務官網縮圖牆 */}
             <section id="sec-ops" className="bg-white border-2 border-slate-300 rounded overflow-hidden shadow-xs">
               <div className="bg-[#0F172A] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-sm sm:text-base font-extrabold">
@@ -1299,7 +1376,6 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
                   </div>
 
                   <div className="p-5 overflow-y-auto space-y-5 flex-1 bg-[#F8FAFC]">
-                    {/* 新增紀錄表單 */}
                     <div className="bg-white border border-blue-200 rounded p-4 space-y-3">
                       <div className="text-sm font-extrabold text-[#0F172A]">🔧 新增「{activeSite.name}」的更新與需求紀錄</div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
@@ -1314,11 +1390,10 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
                       <input type="text" value={newHistoryRequest} onChange={e => setNewHistoryRequest(e.target.value)} placeholder="業務發了什麼需求 / 發生什麼事件..." className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded" />
                       <input type="text" value={newHistoryAction} onChange={e => setNewHistoryAction(e.target.value)} placeholder="我（WP工程師詩葶）做了什麼更動 / 還原結果..." className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded" />
                       <div className="flex justify-end">
-                        <button onClick={handleAddSiteHistory} className="px-4 py-2 text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white rounded">+ 儲存這筆紀錄（手機/電腦自動記憶）</button>
+                        <button onClick={handleAddSiteHistory} className="px-4 py-2 text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white rounded">+ 儲存這筆紀錄（自動同步雲端）</button>
                       </div>
                     </div>
 
-                    {/* 時間軸列表 */}
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-extrabold">📅 歷史紀錄時間軸（共 {records.length} 筆）</span>
@@ -1345,6 +1420,76 @@ ${MALICIOUS_IP_LIST.map((ip) => `    Require not ip ${ip}`).join('\n')}
               </div>
             );
           })()}
+
+          {/* Google 雲端即時同步設定視窗 */}
+          {showCloudModal && (
+            <div className="fixed inset-0 z-50 bg-black/65 flex items-center justify-center p-4">
+              <div className="bg-white border-2 border-slate-300 rounded-md max-w-xl w-full shadow-2xl overflow-hidden">
+                <div className="px-5 py-3.5 bg-[#0F172A] text-white flex items-center justify-between">
+                  <h3 className="text-base font-extrabold">☁️ Google 雲端資料庫即時同步設定</h3>
+                  <button onClick={() => setShowCloudModal(false)} className="px-2 py-0.5 bg-slate-800 rounded text-sm font-bold">✕</button>
+                </div>
+                <div className="p-5 space-y-4 text-xs">
+                  <p className="text-slate-600 leading-relaxed">
+                    貼上你剛剛部署好的 <strong>Google Apps Script 網頁應用程式網址</strong>（<code>https://script.google.com/macros/s/.../exec</code>），設定完成後，你在手機或電腦新增的任何業務紀錄都會自動寫入雲端並跨裝置即時同步！
+                  </p>
+                  <div>
+                    <label className="block font-extrabold text-slate-800 mb-1">Google Apps Script 雲端 API 網址：</label>
+                    <input
+                      type="text"
+                      value={tempCloudUrl}
+                      onChange={(e) => setTempCloudUrl(e.target.value)}
+                      placeholder="https://script.google.com/macros/s/xxxxxx/exec"
+                      className="w-full px-3 py-2 font-mono bg-slate-50 border border-slate-300 rounded focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  {cloudApiUrl && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded space-y-1.5">
+                      <div className="font-extrabold text-emerald-900">🔗 給主管或另一支手機的「免設定自動連線專屬網址」：</div>
+                      <p className="text-emerald-800">複製下方網址傳給主管，主管一打開就會自動連上同一份雲端資料庫：</p>
+                      <button
+                        onClick={() => {
+                          const baseUrl = window.location.origin + window.location.pathname;
+                          const shareLink = `${baseUrl}?cloud=${encodeURIComponent(cloudApiUrl)}`;
+                          copyTextSafely(shareLink, () => triggerToast('已複製「免設定自動同步專屬網址」，可直接傳給主管！'));
+                        }}
+                        className="px-3 py-1.5 font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white rounded"
+                      >
+                        📋 複製免設定專屬同步網址
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+                    <button
+                      onClick={() => setShowCloudModal(false)}
+                      className="px-3 py-2 font-bold bg-slate-100 text-slate-700 rounded"
+                    >
+                      取消
+                    </button>
+                    <button
+                      onClick={() => {
+                        const clean = tempCloudUrl.trim();
+                        setCloudApiUrl(clean);
+                        try {
+                          localStorage.setItem('csc_cloud_api_url', clean);
+                        } catch {}
+                        if (clean) {
+                          pushToGoogleSheetCloud(sites, logs, siteHistories, clean);
+                          triggerToast('已綁定 Google 雲端資料庫並上傳目前進度！');
+                        } else {
+                          triggerToast('已清除雲端連線設定');
+                        }
+                        setShowCloudModal(false);
+                      }}
+                      className="px-4 py-2 font-extrabold bg-blue-600 hover:bg-blue-700 text-white rounded"
+                    >
+                      儲存並立即同步雲端
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
